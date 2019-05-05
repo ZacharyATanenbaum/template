@@ -9,7 +9,7 @@
   <distill-header></distill-header>
 <d-front-matter>
   <script id='distill-front-matter' type="text/json">{
-    "title": "Multi Agent Reinforcement Learning - A Survey",
+    "title": "Multi Agent RL - A Survey",
     "description": "",
     "published": "May 13, 2019",
     "authors": [
@@ -47,9 +47,9 @@
 
   <a class="marker" href="#section-1" id="section-1"><span>1</span></a>
   <h2>Introduction</h2>
-  <aside>Some text in an aside, margin notes, etc...</aside>
-  <p>Another thing.</p>
-
+  <p>
+  Many real world applications of reinforcement learning rely on the interactions between multiple participants... Finish after body of paper
+  </p>
 
 
   <a class="marker" href="#section-2" id="section-2"><span>2</span></a>
@@ -57,25 +57,432 @@
   <p>Another thing.</p>
 
     <a class="marker" href="#section-2.1" id="section-2.1"><span>2.1</span></a>
-    <h3>Deep Q-Learning</h3>
-    <p>Stuff</p>
+    <h3>Q-Learning</h3>
+    <p>
+    In a MDP, the agent's goal is to maximize expected reward over the time horizon (in this case infinite):
 
+     \[R_t = E  \left\{    \displaystyle\sum_{i=0}^{\infty}    \gamma^i r_{t+i+1} \right\} \]
+
+     where \(\gamma \in \lbrack 0,1) \) is the discount factor and the expectation is taken over the probabilistic state transitions.
+      The behavior of an agent is determined by its policy \(\pi\), which describes how an agent will choose an action given the current state.
+         In order to achieve the goal of learning a policy that will maximize long term reward we define the utility function:
+             \[Q^{\pi} : S \times A \rightarrow \mathbb{R}\]
+
+             \[Q^{\pi}(s,a) = E_{\pi} \left\{      \displaystyle\sum_{i=0}^{\infty}    \gamma^i r_{t+i+1} | s,a,\pi    \right\} \]
+
+             Q-Learning is an iterative procedure used to approximate the optimal Q function \(Q^*(s,a) = max_{\pi}Q^{\pi}(s,a)\).
+             <b>(put in closed form eq for Q*?)</b>
+             The Q-table stores current estimates of previously explored state, action pairs and is updated using the equation:
+
+             \[Q(s_t,a_t) := Q(s_t,a_t) + \alpha[r_{t+1} + \gamma max_{a'}Q(s_{t+1},a') - Q(s_t,a_t)]  \]
+
+             where the \(a'\) are potential agent actions in state \(s_{t+1}\), and \(\alpha \in (0,1]\) is the learning rate.
+             Since the Q-value updates do not require knowledge about the probabilistic state transition function or the reward function,
+             Q-Learning is considered model-free.
+    </p>
+
+    <p>
+    In order for the sequence of Q-functions described above to converge to the optimal Q*, the agent must try all actions from all states with non-zero probability.
+    Therefore the learned policy cannot be the deterministic, prohibiting the greedy policy that picks the action with highest Q-value for every state.
+    Instead, the policy must be a mapping from an environment state to a probability distribution over the agent actions, which is non-zero for all actions.
+    This is known as the exploitation-exploration tradeoff, where a policy seeks to exploit actions that are known to be
+    high value while also attempting unexplored actions.
+    One example of such a policy is \(\epsilon\)-greedy exploration, where the agent chooses a random action with probability \(\epsilon\) and the action with
+    largest Q-value with probability \((1-\epsilon)\). Other examples include Boltzmann exploration and entropy sampling.
+    <b>(put in equations?)</b>
+    </p>  
+
+    <a class="marker" href="#section-2.2" id="section-2.2"><span>2.2</span></a>
+    <h3>Deep Q-Learning</h3>
+    <p>
+    The state action space in many environments can be quite large, which can make learning a complete Q-table computationally intractible.
+    While each of these state, action pairs are unique some may occur infrequently or may be strategically similar or other pairs.
+    Deep Q-Learning seeks to generalize the knowledge of explored states by approximating \(Q(s,a)\)
+    with a Deep Q-Network (DQN), \(Q(s,a|\theta)\), where \(\theta\)
+    are the neural network weights that parametrize the Q-values. The weights are updated by minimizing the loss function:                                                                            
+    \[\mathcal{L}(s_t,a_t|\theta_i) = E_{s_t,a_t,r_t,s_{t+1} \sim D }  \left\{  (r_t + \gamma max_{a'}\overline{Q}(s_{t+1},a'|\theta_i) - Q(s_t,a_t|\theta_i))^2  \right\} \]
+
+    There are two key components to the above equation that improve convergence.
+    First is the use of an experience replay buffer \(D\), containing tuples \( (s_j, a_j, r_j, s_{j+1})^J_{j=1}\) that have been observed by the learning agent.
+    Rather than updating the the Q-network with each new explored state, the network is updated using uniformly drawn samples
+    from the replay buffer. Second is the target network \(\overline{Q}\), whose weights are kept fixed for a certain number of iterations
+    and then updated periodically.
+    </p>  
+
+    <a class="marker" href="#section-2.3" id="section-2.3"><span>2.3</span></a>
+    <h3>Partial Observability</h3>
+    <p>
+    In many real-world senarios partial observability provides another confounding factor for Deep Q-Learning.                                                                                        If the entire environment state is not observable to all agents, then the problem must be modelled using
+    a <i>partially observable Markov Game</i> (POMG).
+    Partial observability can occur if previous state data influences the optimal actions in the current state.
+    For example, if an agent is trained to play a videogame through still game images,
+    previous images may have an important impact on current state strategy.
+    In many multi-agent senarios the state-action space is simply too large, so partial observability is imposed
+    to make the problem computationally tractible.
+    </p>
+
+    <a class="marker" href="#section-2.4" id="section-2.4"><span>2.4</span></a>
+    <h3>Actor-Critic</h3>
+
+    <a class="marker" href="#section-2.5" id="section-2.5"><span>2.5</span></a>
+    <h3>Policy Gradient</h3>
+
+    <a class="marker" href="#section-2.6" id="section-2.6"><span>2.6</span></a>
+    <h3>Off Policy vs. On Policy</h3>
+
+    <a class="marker" href="#section-2.7" id="section-2.7"><span>2.7</span></a>
+    <h3>Reply Buffer</h3>
+
+    <a class="marker" href="#section-2.8" id="section-2.8"><span>2.8</span></a>
+    <h3>Target Networks</h3>
+
+    <a class="marker" href="#section-2.9" id="section-2.9"><span>2.9</span></a>
+    <h3>Model-Free</h3>
+
+    <a class="marker" href="#section-2.10" id="section-2.10"><span>2.10</span></a>
+    <h3>Credit Assignment Problem</h3>
 
 
   <a class="marker" href="#section-3" id="section-3"><span>3</span></a>
   <h2>Methods</h2>
-  <aside>Some text in an aside, margin notes, etc...</aside>
-  <p>Another thing.</p>
 
     <a class="marker" href="#section-3.1" id="section-3.1"><span>3.1</span></a>
     <h3>Markov Games Model</h3>
-    <p>Stuff</p>
+    <p>
+    A Markov Decision Process (MDP) provides a mathematical framework for senarios where a single agent makes decisions in an environment to optimize reward,
+    and each decision has a randomized effect on the environment.
+    Formally it is defined as a tuple \(\langle S,A,f,p \rangle \), where
+    \(S\) is a finite set of environment states, \(A\) is a finite set of agent actions, \(f: S \times A \times S \rightarrow [0,1]\)
+    is a state transition function, and \(p: S \times A \times S \rightarrow \mathbb{R}\) is a reward function.
+    At each time step \(t\), the agent can observe the environment state \(s_t \in S\) and take some action \(a_t \in A\).
+    The action transitions the environment to state \(s_{t+1}\) with probability \( f(s_t,a_t,s_{t+1}) \)
+    where the agent receives some scalar reward \(r_{t+1} = p(s_t,a_t,s_{t+1}) \).
+    </p>
+
+    <p>
+    A Markov Game, also known as a stochastic game, is a natural extension of a MDP to a senario with \(m\) agents.
+    It is defined by \(\langle S,\mathcal{A},F,P \rangle \) where S remains a finite set of states,
+    \(\mathcal{A}\) = \(A_1 \times ... \times A_m\) is the joint action set, and
+    \(F: S \times \mathcal{A} \times S \rightarrow [0,1]\) and
+    \(P: S \times \mathcal{A} \times S \rightarrow \mathbb{R}^m\)
+    are the state transition and joint reward functions, repectively, which both depend on all agent actions.
+    </p>
+
+    <a class="marker" href="#section-3.2" id="section-3.2"><span>3.2</span></a>
+    <h3>Multi-Agent Deep Q-Learning</h3>
+
+      <a class="marker" href="#section-3.2.1" id="section-3.2.1"><span>3.2.1</span></a>
+      <h4>Non-Stationary</h4>
+      <p>
+      The state action space in many environments can be quite large, which can make learning a complete Q-table computationally intractible.
+      While each of these state, action pairs are unique some may occur infrequently or may be strategically similar or other pairs.
+      Deep Q-Learning seeks to generalize the knowledge of explored states by approximating \(Q(s,a)\)
+      with a Deep Q-Network (DQN), \(Q(s,a|\theta)\), where \(\theta\)
+      are the neural network weights that parametrize the Q-values. The weights are updated by minimizing the loss function:                                                                            
+      \[\mathcal{L}(s_t,a_t|\theta_i) = E_{s_t,a_t,r_t,s_{t+1} \sim D }  \left\{  (r_t + \gamma max_{a'}\overline{Q}(s_{t+1},a'|\theta_i) - Q(s_t,a_t|\theta_i))^2  \right\} \]
+
+      There are two key components to the above equation that improve convergence.
+      First is the use of an experience replay buffer \(D\), containing tuples \( (s_j, a_j, r_j, s_{j+1})^J_{j=1}\) that have been observed by the learning agent.
+      Rather than updating the the Q-network with each new explored state, the network is updated using uniformly drawn samples
+      from the replay buffer. Second is the target network \(\overline{Q}\), whose weights are kept fixed for a certain number of iterations
+      and then updated periodically.
+      </p>  
+
+      <a class="marker" href="#section-3.2.2" id="section-3.2.2"><span>3.2.2</span></a>
+      <h4>Deep Repeated Update Q-Learning</h4>
+      <p>
+      In the single agent case adding recurrency to a DQN has been successful <dt-cite key="hausknecht"></dt-cite>,
+      allowing agents to "remember" previous states that are now hidden to better estimate Q-values for the current state.
+      The agent has access to some observation \(o\) but cannot access the entire state \(s\).
+      A Deep Reccurent Q-Network (DRQN) takes the form \(Q(o_t,h_{t-1},a_t,|\theta_i)\) at each time step,
+      and outputs \(Q_t\), the estimate of \(Q(s_t,a_t)\), and \(h_t\), a representation of the hidden state
+      of the network which is then fed into the DRQN at the following time step.
+      In <dt-cite key="ddrqn"></dt-cite> this idea is extended to the multi-agent case through a
+      <i> deep distrbuted reccurent Q-network </i> (DDRQN).
+      Naively, this could be achieved by assigning a DQRN of the form \(Q^m(o_t^m,h_{t-1}^m,a_t^m|\theta_i^m)\) to each of the m agents in the learning senario.
+      Instead, DDRQN makes several modifictions to improve performance.
+      First, the action from the previous time-step is provided as a network input in the current timestep.
+      Second, the agents share weights so that only a single network is learned, which greatly reduces the number of parameters and speeds learning.
+      These changes give the learned Q-function the form \(Q(o_t^m,h_{t-1}^m,m,a_{t-1}^m, a_t^m|\theta_i)\).
+      Despite having the same network weights agents can still act independently because
+      they recieve different observations due to partial observability and therefore evolve different hidden states.
+      Also, for each agent an index m is included as an input to the network, helping agents specilize in certain tasks.
+      Finally,the algorithm disables the experience replay buffer as it is misleading in a multi-agent, non-stationary environment.
+      Perhaps future work could use elements of Deep Repeated Update Q-Learning, or other algorithms that
+      address non-stationary, rather than eliminating experience replay entirely.
+      </p>
+
+      <a class="marker" href="#section-3.2.2" id="section-3.2.2"><span>3.2.2</span></a>
+      <h4>Deep Distributed Reccurant Q-Networks</h4>
+      <p>
+      In the single agent case adding recurrency to a DQN has been successful <dt-cite key="hausknecht"></dt-cite>,
+      allowing agents to "remember" previous states that are now hidden to better estimate Q-values for the current state.
+      The agent has access to some observation \(o\) but cannot access the entire state \(s\).
+      A Deep Reccurent Q-Network (DRQN) takes the form \(Q(o_t,h_{t-1},a_t,|\theta_i)\) at each time step,
+      and outputs \(Q_t\), the estimate of \(Q(s_t,a_t)\), and \(h_t\), a representation of the hidden state
+      of the network which is then fed into the DRQN at the following time step.
+      In <dt-cite key="ddrqn"></dt-cite> this idea is extended to the multi-agent case through a
+      <i> deep distrbuted reccurent Q-network </i> (DDRQN).
+      Naively, this could be achieved by assigning a DQRN of the form \(Q^m(o_t^m,h_{t-1}^m,a_t^m|\theta_i^m)\) to each of the m agents in the learning senario.
+      Instead, DDRQN makes several modifictions to improve performance.
+      First, the action from the previous time-step is provided as a network input in the current timestep.
+      Second, the agents share weights so that only a single network is learned, which greatly reduces the number of parameters and speeds learning.
+      These changes give the learned Q-function the form \(Q(o_t^m,h_{t-1}^m,m,a_{t-1}^m, a_t^m|\theta_i)\).
+      Despite having the same network weights agents can still act independently because
+      they recieve different observations due to partial observability and therefore evolve different hidden states.
+      Also, for each agent an index m is included as an input to the network, helping agents specilize in certain tasks.
+      Finally,the algorithm disables the experience replay buffer as it is misleading in a multi-agent, non-stationary environment.
+      Perhaps future work could use elements of Deep Repeated Update Q-Learning, or other algorithms that
+      address non-stationary, rather than eliminating experience replay entirely.
+      </p>
+
+    <a class="marker" href="#section-3.3" id="section-3.3"><span>3.3</span></a>
+    <h3>Deep Deterministic Policy Gradient</h3>
+
+      <a class="marker" href="#section-3.3.1" id="section-3.3.1"><span>3.3.1</span></a>
+      <h4>General</h4>
+      <p>
+      Most problems in robots fall under continuous action spaces
+      Discretizing a continuous action space too much results in the curse of dimensionality.
+      Google DeepMind created DDPG.
+      DDPG is a policy-gradient actor-critic algorithm
+      DDPG is off-policy and model-free
+      DDPG uses a stochastic behavior policy for good exploration but estimates a deterministic target policy.
+      A policy gradient algorithm utilizes a form of policy iteration where the policy is evaluated and then the policy gradient is maximized.
+      Uses a deterministic target policy.
+      Uses two networks, one for actor and one for critic.
+      Actor compute action predictions for the current state.
+      Critic generates a temporal-difference (TD) error signal for each time step.
+      The input of the actor network is the current state and outputs a single real value representing an action chosen from a continuous action space.
+      The critics is given the current state and output of the action given by the actor.
+      The output of the critic is the estimation of the Q-value and action by the actor.
+      Data is not I.I.D as it’s correlated through time. Thus experience replay is used to correlate the training samples.
+      Directly updating the actor and critic neural networks can lead to instability. Thus, target networks are used to stabilize the updates.
+      https://pemami4911.github.io/blog/2016/08/21/ddpg-rl.html
+      </p>
+
+      <p>
+      DDPG concurrently learns a Q-Function and a policy.
+      It uses off-policy data and the Bellman equation to learn the Q-function and uses the Q-function to learn the policy.
+      Optimal action can be found by solving: a*(s) = argmaxa Q*(s,a)
+      Specifically designed fo, and only be used with, continuous action spaces.
+      In a discrete action space one can directly search for an optimal action.
+      In a continuous action space this is a painfully expensive subroutine.
+      The Q function is presumed to be differentiable with respect to the action argument.
+      We approximate the Q-function using a gradient-based learning rule for a policy (s) as maxaQ(s,a) Q(s,(s))
+      The implementation of DDPG does not support parallelization.
+      DDPG is performed by minimizing the Mean Square Bellman Equation Loss with stochastic gradient descent. L( , D) = E(s,a,r,s',d) from D[(Q(s,a) - (r+(1-d)Qtarg(s', targs(s'))))2]where targis the target policy.
+      As the action space is continuous, and we assume the Q-function is differentiable with respect to the action. Gradient ascent (with respect to policy parameters only) to solve maxEs from D[Q(s, (s))]where the Q-function parameters are treated as constants.
+      To make DDPG policy explore better noise is added to their action at training time.
+      That noise is uncorrelated, mean-zero Gaussian noise.
+      https://spinningup.openai.com/en/latest/algorithms/ddpg.html
+
+      ADD PSUDOCODE HERE
+      </P>
+
+      <a class="marker" href="#section-3.3.2" id="section-3.3.2"><span>3.3.2</span></a>
+      <h4>Mixed Multi-Agent Actor Critic</h4>
+      <p>
+      Unfortunately, traditional reinforcement learning approaches such as Q-learning or policy gradient are poorly suited to multi-agent environments.
+      One issue is that each agent’s policy is changing as training progresses and the environment becomes non-stationary from the perspective of any individual agent.
+      In this work a general-purpose multi-agent learning algorithm that:
+      Leads to learned policies that only use local information at execution time
+      Does not assume a differentiable model of the environment dynamics or any particular struction on the communication method between agenst
+      Is applicable not only to cooperative interaction but to competitive or mixed interaction involving both physical and communicative behavior.
+      A framework with centralized trainings and decentralized executions.
+      A centralized critic is used with information about each other agent while the actor just uses local information. During execution time the actors are used with no shared information.
+      An ensemble of policies is used for training to improve stability.
+      K sub-policies are trained where a random one is chosen at each episode.
+      Each actor maintains an approximation of the true policy for each other actor. This policy is updated with the latest samples of each agent from the replay buffer.
+
+      https://arxiv.org/pdf/1706.02275.pdf
+      </p>
+
+      <a class="marker" href="#section-3.3.3" id="section-3.3.3"><span>3.3.3</span></a>
+      <h4>Multi to Single Agent Learning</h4>
+      <p>
+      20 individual DDPG agents corresponding to 20 agents in the environment w/ a single reply buffer is used for initial training.
+      Then, a switch over is used where a single DDPG agent learns from the one Reply Buffer.
+      This one DDPG agent is used for each of the 20 agents in the environment.
+
+      https://medium.com/@kinwo/solving-continuous-control-environment-using-deep-deterministic-policy-gradient-ddpg-agent-5e94f82f366d
+      </p>
+
+      <a class="marker" href="#section-3.3.4" id="section-3.3.4"><span>3.3.4</span></a>
+      <h4>Minimax Multi-Agent DDPG</h4>
+      <p>
+      Deep Reinforcement Learning tends to be “brittle” where an agent can be stuck in a poor local optima state and not generalize to new environments.
+      This also includes a new policy proposed by an opponent.
+      Introduces a new algorithm - MiniMax Multi-Agent Deep Deterministic Policy Gradient:
+      Minimax extension of DDPG
+      Multi-Agent Adversarial Learning to efficiently solve proposed formulation.
+      Essentially this paper trains assuming worst-case scenario or that the opponent is playing optimally. (Mini-Max)
+      To update, an approximate linear function is created and the gradient is determined based on this function.
+      https://people.eecs.berkeley.edu/~russell/papers/aaai19-marl.pdf
+      </p>
+
+      <a class="marker" href="#section-3.3.5" id="section-3.3.5"><span>3.3.5</span></a>
+      <h4>Multi-Agent with Communication</h4>
+      <p>
+      Use a communicative medium, that’s learned, in addition to an agent's own experience.
+      Assume observations received by most agents are extremely noisy and weakly correlated to the true state. This is even more true for multi-agent environments where a specific state might not be impactful to any given agent specifically.
+      Two policies, one for actions and one for communication.
+      These two policies are connected through a communication medium.
+      Two types of communication -> broadcast (1 -> all) and unicast (1 -> 1)
+      Communication is done at a smaller time scale -> every C steps. (This includes communication policy learning)
+      Intrinsic rewards are used for both communication and action policies.
+      Two separate experience buffers.
+      One for communication policies and the other for action policies.
+      https://arxiv.org/pdf/1812.00922.pdf
+      </p>
 
 
+    <a class="marker" href="#section-3.4" id="section-3.4"><span>3.4</span></a>
+    <h3>Decentralized Partially Observable Markov Decision Process</h3>
+    <p>
+    Dec-POMDPs \citep{DecPOMDP} is  the basis of all the Decentralized execution of  Multi Agent Policy Gradient method. Formally described as
+    </p>
+    <p>
+    $$<S, U, P, r, Z, O, n, \gamma > $$
+    </p>
+
+    <p>
+    where S is the Set of states, $s \in S$  true state of the environment. U is the Set of joint actions of all agents, each agent $a \in  A$, chooses an action $u^a \in U$, forming a joint action $u \in U \equiv U^n$. P is the Probability function for determining the resultant state given the original state and action : $P(s_t |s_{t-1}, u_{t-1}):  S \times U \times S \rightarrow [0,1] $. Partially observable scenarios in which an observation function $O(s,a): S \times A \rightarrow Z $, determines  the observation $z^a  \in Z $  that each agent draws individually. Each  agent  maintains an action-observation history $\tau^a \in T  \equiv (Z \times U)^* $ on which it conditions a stochastic policy $\pi^a (u^a | \tau  ^a ): T \times U \rightarrow [0,1]. $ Each Agent share the same team reward $r(s,u): S \times U \rightarrow R $, where $\gamma \in [0,1] $ is the discount factor. The joint policy $\pi$ admits a joint action-value function: \\
+    </p>
+    <p>
+   $Q^\pi (s_t,u_t)  = \EX_{s_{t+1}:\infty; u_{t+1:\infty}}[R_t| s_t,u_t] $\\
+   where $R_t = \sum \gamma^ir_{t+i} $ is the discounted return.
+    </p>
+
+    <a class="marker" href="#section-3.5" id="section-3.5"><span>3.5</span></a>
+    <h3>QMIX: Monotonic Value Funtion Factorization for Deep Multi-Agent RL</h3>
+
+      <a class="marker" href="#section-3.5.1" id="section-3.5.1"><span>3.5.1</span></a>
+      <h4>Theory</h4>
+      <p>
+      QMIX \citep{qmix} is an example of centralized training decentralized execution paradigm algorithm. which employs a network that estimates joint action-values as a complex non-linear combination of per-agent values. QMIX is like value decomposition networks \citep{vdn}, where centralized $Q_{tot}$ is factored as sum of individual value functions $Q_a$ that condition only on individual observations and actions, a decentralized policy arises simply from each agent selecting actions greedily with respect to its $Q_a$. The difference being QMIX doesn't need to ensure full factorization and individual value factions are mixed in non linear fashion. VDN severely limits the complexity of centralized action-value functions that can be represented and ignores any extra state information available during training.  
+
+      global argmax performed on $Q_{tot}$ yields the same result as a set of individual argmax operations
+      performed on each $Q_a$. 
+      % \begin{align}\tag{label}
+      </p>
+
+      <p>
+      % \end{align}
+      One agent network that represents its individual value function $Q_a(\tau^a , u^a )$. It represents agent networks as DRQNs \citep{dqrn} that make use of recurrent neural networks, receives the current individual observation $o_a^ t$ and the last action $u_a^{t-1}$ as input at each time step.
+      </p>
+
+      <p>
+      Individual value function $Q_a$ are mixed monotonically in a complex non-linear way via a mixing feed forward network to form $Q_{tot}$, where network is maintained with positive weights, ($\frac{\partial Q_{tot}}{\partial Q_a} > 0 $) \citep{Dugas}. The weights of the mixing network are produced by a separate one layer hyper networks with absolute activation function which takes the state s as input. The final bias is produced by a 2 layer hyper network with a ReLU non-linearity. The state is used by the hypernetworks rather than being passed directly into the mixing network because $Q_{tot}$ is allowed to depend on the extra state information in non monotonic ways. For complete diagram of architecture see fig \ref{fig:qmix}
+      </p>
+
+      <p> ADD QMIX PNG IMAGE HERE </p>
+
+      <p>
+      Qmix is trained in an end-to-end manner by minimizing the following loss  analogous to the standard DQN loss :
+      $$\mathcal{L}(\theta) = \sum^b_{i=1} [(y_i^{tot} - Q_{tot}(\tau ,  u,  s ; \theta))^2]   $$
+
+      where b is the batch size of transitions sampled  from replay buffer.   $y^{tot} = r + \gamma max_{u'} Q_{tot}(\tau' ,  u',  s' ; \theta^-)$ and $\theta^-$ are the parameters of a target network as in DQN. Maximisation of $Q_{tot}$ in time linear in the number of agents because of \eqref{eq:qmix_linear} 
+      </p>
+
+      <a class="marker" href="#section-3.5.2" id="section-3.5.2"><span>3.5.2</span></a>
+      <h4>Implementation: StarCraft Multi-Agent Challenge</h4>
+      <p>
+      The StarCraft Multi-Agent Challenge (SMAC) \citep{starcraft} is built on the popular real-time strategy game StarCraft II3 and makes use of the SC2LE environment \citep{star}. 
+      \footnote{Framework  Code: \url{https://github.com/oxwhirl/smac},\\
+      Pytorch Code (RL algorithms) \url{https://github.com/oxwhirl/pymarl}}
+
+
+      \textbf{Easy scenarios:}
+       are fully solved (above 95\% median win rate) by IQL and QMIX setup within the timeframe given. For higher number of units, COMA and IQL agents also learned to win the scenario most of the time, although the cooperation between agents is less coordinated compared with QMIX. 
+       QMIX and IQL won on alternate  fire rounds to deviate enemy. 
+        More strategy scenarios QMIX outperformed COMA and  IQL. (self sacrificing, intercepting enemy, focus  fire , etc)
+
+        \textbf{Hard scenarios:}
+        None performed well, winning the battle requires significantly more coordination and strategy, which is difficult when the number of independent agents is large. The longer episodes make it more difficult to train, since temporal credit assignment is harder. Need for faster training.a longer training period does indeed lead to much better performance on this scenario. We hypothesise that a better exploration scheme would help in this regard, since the agents would be exposed to better strategies more often, as opposed to requiring many training iterations and
+
+        \textbf{SUPER HARD SCENARIOS:}
+        None of our tested methods utilise any form of directed state space  exploration, which leads to them all remaining in the local optimum of merely damaging the enemy units for reward, instead of first moving to the critical point and then attacking. All three methods make little to no progress. Winning the battle requires significantly more coordination and strategy than
+        in the symmetric case. 
+
+        \textbf{Conclusion }
+        Only the agents with RNNs are able to learn a good strategy agents and RNN in addition to Feed Forward network is the desired agent  network. 
+      </p>
+
+    <a class="marker" href="#section-3.6" id="section-3.6"><span>3.6</span></a>
+    <h3>Coordination Graphs</h3>
+    <p>
+    The decision of an agent is influenced by those of only a small subset of other agents. This
+    locality of interaction means the joint action-value function Q(a) can be represented as the sum of smaller reward functions, one for each factor e. $Q_a = \sum_{e=1}^C Q_e(a_e)$, where C is the number of factors and $a_e$ is the local joint action of the agents that participate in factor e
+
+    There are many cases in which the problem itself is not perfectly factored according to a coordination graph, in these cases approximate factorization is helpful. $Q(a) \approx \^Q(a)= \sum_e \^Q_e(a_e)$
+    decomposition of the original function in a desired number of local approximate terms $\^Q_e(a_e)$ 
+    </p>
+
+    <p>
+    \begin{enumerate}
+    \item \textbf{Single agent decomposition (Mixture of experts):} each agent $i$ is represented by an individual neural network and computes its own individual action-values $\^Q_i(a_i)$ based on its local action $a_i$ e.g. \citep{iql}
+    </p>
+    <p>  
+    \item \textbf{Random partition:} agents are randomly partitioned to form factors of size f without replacement. Each of the $C = \frac{|D|}{f}$  factors is represented by a different neural network that represents local action-values $\^Q_e(a_e)$, one for each of its output units, for a certain factor e, where $a_e$ is the local joint action of agents in factor e
+    </p>
+    <p>         
+    \item \textbf{Overlapping factors:} Fixed number C of factors is picked at random from the set of all possible factors of f. Every factor e is represented by a different neural network learning local action-values $\^Q_e(a_e)$ for the local joint actions $a_e$
+    </p>           
+    <p> 
+    \item \textbf{Complete factorization:} each agent i is grouped with every possible combination of the other agents in the team D. $C = \frac{|D|!}{f! (|D|-f)!}$ factors, each represented by a network.  Each of these networks learns local action values $\^Q_e(a_e)$
+    </p>
+    <p>
+    \item Some Pathological examples, where all types of factorization result in selecting the worst possible joint action. Only joint learners seem to be able to address such problems, currently no scalable deep RL methods for for dealing with such problems seem to exist.
+    \item \textit{complete factorization} of modest factor size coupled with the factored Q-function learning approach yield near-perfect reconstructions and rankings of the actions, also for non-factored action-value functions. Moreover, these methods scale much better than joint learners: for a given training time, we say that these complete factorization already outperform fully joint learners on modestly sized problems
+    \item For more benign problems, random overlapping factors also achieve excellent performance, comparable to those of more computationally complex methods like joint learners and complete factorizations. 
+    \item Factorizations with the mixture of experts approach usually perform somewhat worse than the corresponding factored Q-function approaches. However, in some cases they perform better/comparable. This is promising, because the mixture of experts learning approach does not require any exchange of information between the neural networks, thus potentially facilitating learning in settings with communication constraints, and making it easier to parallelize
+    </p>
 
   <a class="marker" href="#section-4" id="section-4"><span>4</span></a>
   <h2>Conclusion</h2>
-  <p>Another thing.</p>
+
+    <a class="marker" href="#section-4.1" id="section-4.1"><span>4.1</span></a>
+    <h3>Decentralized Execution</h3>
+    <p>
+    \item Q-Learning or policy gradient are poorly suited to multi-agent environments. They do not allow for the inclusion of extra state information during training. The environment becomes non-stationary from the individual agent's point of view, induced by simultaneously learning and exploring agents. violating Markov assumptions required for convergence of Q-learning. 
+    </p>
+
+    <p>
+    \item Policy gradient suffers from a variance that increases as the number of agents grows and can be sample-inefficient and  prone to getting stuck in sub-optimal local minima.
+    </p>
+
+    <p>
+    \item  \textbf{(zach, lowe's model precursor)} model-based policy optimization which can learn optimal policies via back-propagation, but this requires a (differentiable) model of the world dynamics and assumptions about the interactions between agents. Notorious instability of adversarial training methods
+    </p>
+
+    <p>
+    \item Centralized Learning of joint actions can naturally handle coordination problems and avoids non-stationary, but is hard to scale, as the joint action space grows exponentially in the number of agents
+    </p>
+
+    <p>
+    Scalable centralized learning include coordination graphs \citep{centralized}, which exploit conditional independencies between agents by decomposing a global reward function into a sum of agent-local terms. Sparse cooperative Q-learning \citep{sparse}, tabular Q-learning algorithm that learns to coordinate the actions of a group of cooperative agents only in the states in which such coordination is necessary, encoding those dependencies in a coordination graph.
+    </p>
+
+    <p>
+    Centralized action-value function $Q_{tot}$ conditions on the global state and the joint action. It is difficult to learn when there are many agents and, no obvious way to extract decentralized policies. Methods like IQL \citep{iql}) where each agent a learn an individual action-value function $Q_a$ independently may not converge and are non-stationary. On the other extreme, COMA  \citep{coma} is a fully centralized state action value function $Q_{tot}$ which is used to guide the optimization of decentralized policies in an actor-critic framework. A middle ground is to learn factored Q-value functions, which represent the joint value but decompose it as the sum of a number of local components, each involving only a subset of the agents. Compared to independent learning, a factored approach can better represent the value of coordination and does not introduce non-stationarity. Compared to a naive joint approach, it has better scalability in the number of agents.
+    </p>
+
+    <p>
+    Training the fully centralised critic becomes impractical when there are more than a handful of agents. \citep{gupta} present a centralised actor-critic algorithm with per-agent critics, which scales better with the number of agents but mitigates the advantages of centralisation.
+    </p>
+
+    <a class="marker" href="#section-4.2" id="section-4.2"><span>4.2</span></a>
+    <h3>Paradigm of Centralized Training with Decentralized Execution</h3>
+    <p>
+    Centralized training with decentralized execution is a common strategy deployed to train Multi-Agent Reinforcement learning model, extensively studied by  (\cite{decentralized};\cite{lowe};\cite{Kraemer}). Although training is centralized but execution is decentralized. Each agent (actor) can access local observation history at the execution time. Extra information is available only available  at training to ease up the training. The learning algorithm (critic) has access to all local action-observation histories $\tau$ and global state s, but each agent’s learnt policy can condition only on its own action-observation history $\tau^a$ .
+    </p> 
+
+    <p>Q-function generally can't contain different information during  training and testing time. This manner of paradigm is  equally applicable in cooperative and competitive settings. It removes the  the problem of the joint action spaces growing exponentially with the number of agents, rendering it useful in real time applications against the single-agent RL methods.</p>
+
+
+    <a class="marker" href="#section-4.3" id="section-4.3"><span>4.3</span></a>
+    <h3>Other</h3>
 
 
 </d-article>
@@ -89,6 +496,7 @@
   <p>Some text with links describing who reviewed the article.</p>
 
   <d-bibliography src="bibliography.bib"></d-bibliography>
+
 </d-appendix>
 
 <distill-footer></distill-footer>
